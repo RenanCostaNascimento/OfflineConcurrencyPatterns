@@ -51,7 +51,8 @@
 
 <p>Quando duas transações manipulam um mesmo dado, a integridade do mesmo pode ser comprometida. Isso ocorre pois não há garantia que o SGBD de fato manterá os dados consistentes ao término da transação. Para exemplicar essa situação, vamos analisar a Figura 1:  </p>
 
-<p>Figura 1 - Lost Update  </p>
+<p><img src="https://drive.google.com/open?id=0B-o9prCsV_v8ZktIdHNHU1VWN0U" alt="Lost Update">
+Figura 1 - Lost Update  </p>
 
 <p>Na Figura 1 vemos que, mesmo que cada transação isolada fosse mantida pelo SGBD, o updateDado12() realizado no passo 3 seria perdido quando o passo 4 fosse realizado. Isso tornaria o estado do banco inconsistente.  </p>
 
@@ -204,11 +205,13 @@ public static LockManager getInstance() {
 
 <p>Para resolver essa questão, é necessário criar um único ponto de acesso para o conjunto de objetos, de modo que apenas um lock seja necessário para acessá-los. Além disso, é preciso fornecer um método fácil para encontrar o único ponto de acesso para realizar o lock. Uma forma de implemtnação é através de um lock compartilhado, conforme Figura abaixo.</p>
 
-<p>IMAGEM SHARED LOCK</p>
+<p><img src="https://drive.google.com/open?id=0B-o9prCsV_v8aWFTODRyd2sxTDQ" alt="Shared Lock">
+Figura 3 - Shared Lock</p>
 
 <p>Utilizando o lock compartilhado acima, é possível implementar facilmente o Pessimistic Lock, conforma Figura abaixo:</p>
 
-<p>IMAGEM Pessimistic Shared Lock</p>
+<p><img src="https://drive.google.com/open?id=0B-o9prCsV_v8TWV6QWhSMFQ1WGM" alt="Pessimistic Shared Lock">
+Figura 4 - Pessimistic Shared Lock</p>
 
 <h3>
 <a id="cadê-meu-código-2" class="anchor" href="#cad%C3%AA-meu-c%C3%B3digo-2" aria-hidden="true"><span class="octicon octicon-link"></span></a>Cadê meu código?</h3>
