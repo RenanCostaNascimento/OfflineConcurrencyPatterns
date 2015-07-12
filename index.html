@@ -1,33 +1,42 @@
 <!doctype html>
+<!-- The Time Machine GitHub pages theme was designed and developed by Jon Rohan, on Feb 7, 2012. -->
+<!-- Follow him for fun. http://twitter.com/jonrohan. Tail his code on https://github.com/jonrohan -->
 <html>
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <title>Offline Concurrency Patterns by RenanCostaNascimento</title>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 
-    <link rel="stylesheet" href="stylesheets/styles.css">
-    <link rel="stylesheet" href="stylesheets/github-dark.css">
-    <script src="javascripts/scale.fix.js"></script>
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <link rel="stylesheet" href="stylesheets/stylesheet.css" media="screen">
+  <link rel="stylesheet" href="stylesheets/github-dark.css">
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+  <script type="text/javascript" src="javascripts/script.js"></script>
 
-    <!--[if lt IE 9]>
-    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-  </head>
-  <body>
-    <div class="wrapper">
-      <header>
-        <h1>Offline Concurrency Patterns</h1>
-        <p>Projeto que exemplifica alguns padrões de projeto sobre Concorrência Offline.</p>
-        <p class="view"><a href="https://github.com/RenanCostaNascimento/OfflineConcurrencyPatterns">View the Project on GitHub <small>RenanCostaNascimento/OfflineConcurrencyPatterns</small></a></p>
-        <ul>
-          <li><a href="https://github.com/RenanCostaNascimento/OfflineConcurrencyPatterns/zipball/master">Download <strong>ZIP File</strong></a></li>
-          <li><a href="https://github.com/RenanCostaNascimento/OfflineConcurrencyPatterns/tarball/master">Download <strong>TAR Ball</strong></a></li>
-          <li><a href="https://github.com/RenanCostaNascimento/OfflineConcurrencyPatterns">View On <strong>GitHub</strong></a></li>
-        </ul>
-      </header>
-      <section>
-        <h1>
+  <title>Offline Concurrency Patterns</title>
+  <meta name="description" content="Projeto que exemplifica alguns padrões de projeto sobre Concorrência Offline.">
+
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+
+</head>
+
+<body>
+
+  <div class="wrapper">
+    <header>
+      <h1 class="title">Offline Concurrency Patterns</h1>
+    </header>
+    <div id="container">
+      <p class="tagline">Projeto que exemplifica alguns padrões de projeto sobre Concorrência Offline.</p>
+      <div id="main" role="main">
+        <div class="download-bar">
+        <div class="inner">
+          <a href="https://github.com/RenanCostaNascimento/OfflineConcurrencyPatterns/tarball/master" class="download-button tar"><span>Download</span></a>
+          <a href="https://github.com/RenanCostaNascimento/OfflineConcurrencyPatterns/zipball/master" class="download-button zip"><span>Download</span></a>
+          <a href="https://github.com/RenanCostaNascimento/OfflineConcurrencyPatterns" class="code">View Offline Concurrency Patterns on GitHub</a>
+        </div>
+        <span class="blc"></span><span class="trc"></span>
+        </div>
+        <article class="markdown-body">
+          <h1>
 <a id="introdução" class="anchor" href="#introdu%C3%A7%C3%A3o" aria-hidden="true"><span class="octicon octicon-link"></span></a>Introdução</h1>
 
 <p>Oi, eu sou o Renan. Hoje falarei sobre quatro padrões encontrados no livro Patterns of Enterprise Application, de Martin Fowler. Os padrões podem se encontrados no capítulo 16, Offline Concurrency Patterns, escritos por David Rice e Matt Foemmel. Os padrões descritos à seguir serão: Optimistic Offline Lock, Pessimistic Offline Lock, Coarse-Grained Lock e Implicit Lock. Sem mais delongas, vamos começar.  </p>
@@ -42,7 +51,7 @@
 
 <p>Quando duas transações manipulam um mesmo dado, a integridade do mesmo pode ser comprometida. Isso ocorre pois não há garantia que o SGBD de fato manterá os dados consistentes ao término da transação. Para exemplicar essa situação, vamos analisar a Figura 1:  </p>
 
-<p><img src="https://www.dropbox.com/s/886tpjm0cxykydz/Lost%20Update.png?dl=0" alt="Lost Update">
+<p><img src="https://goo.gl/yOh6Lz" alt="Lost Update">
 Figura 1 - Lost Update  </p>
 
 <p>Na Figura 1 vemos que, mesmo que cada transação isolada fosse mantida pelo SGBD, o updateDado12() realizado no passo 3 seria perdido quando o passo 4 fosse realizado. Isso tornaria o estado do banco inconsistente.  </p>
@@ -59,7 +68,7 @@ Independente da forma que o padrão seja implementado, a ideia é a mesma: as al
 </li>
 </ul>
 
-<p><img src="https://www.dropbox.com/s/u1riqq037gj332e/Optimistic%20Offline%20Lock.png?dl=0" alt="Optimistic Offline Lock">
+<p><img src="https://goo.gl/vnD77t" alt="Optimistic Offline Lock">
 Figura 2 - Optimistic Offline Lock  </p>
 
 <p>Vemos então na Figura 2, mais precisamente na etapa 4.1, que o update realizado na etapa 4 não foi efetuado, pois na etapa 3 já havia sido feita uma operação de modificação no registro. Com isso o número da versão do mesmo foi alterado, e o usuário da Sessão 1 ficou impossibilitado de realizar a modificação.  </p>
@@ -196,12 +205,12 @@ public static LockManager getInstance() {
 
 <p>Para resolver essa questão, é necessário criar um único ponto de acesso para o conjunto de objetos, de modo que apenas um lock seja necessário para acessá-los. Além disso, é preciso fornecer um método fácil para encontrar o único ponto de acesso para realizar o lock. Uma forma de implemtnação é através de um lock compartilhado, conforme Figura abaixo.</p>
 
-<p><img src="https://www.dropbox.com/s/hveebmsyj3iaiwk/Share%20version.png?dl=0" alt="Shared Lock">
+<p><img src="https://goo.gl/k6a15U" alt="Shared Lock">
 Figura 3 - Shared Lock</p>
 
 <p>Utilizando o lock compartilhado acima, é possível implementar facilmente o Pessimistic Lock, conforma Figura abaixo:</p>
 
-<p><img src="https://www.dropbox.com/s/5imc0t7akd6exgr/Locking%20a%20Shared%20Version.png?dl=0" alt="Pessimistic Shared Lock">
+<p><img src="https://goo.gl/Cb5v66" alt="Pessimistic Shared Lock">
 Figura 4 - Pessimistic Shared Lock</p>
 
 <h3>
@@ -241,13 +250,26 @@ Desenvolvedores estão propensos a erros, podendo esquecer de escrever uma únic
 <a id="como-funciona-3" class="anchor" href="#como-funciona-3" aria-hidden="true"><span class="octicon octicon-link"></span></a>Como Funciona?</h3>
 
 <p>Tarefas de lock não devem ser tratadas explicitamente pelos desenvolvedores, mas implicitamente pela aplicação. É possível terceirizar essa responsabilidades para Frameworks, o padrão Layers Supertypes, ou ainda Ferramentas de geração de código. É aconselhado usar esse padrão em todas as aplicações, exceto nas mais simples, uma vez que o risco de um haver pelos menos um lock esquecido é muito grande.</p>
-      </section>
+        </article>
+      </div>
     </div>
     <footer>
-      <p>Project maintained by <a href="https://github.com/RenanCostaNascimento">RenanCostaNascimento</a></p>
-      <p>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></p>
+      <div class="owner">
+      <p><a href="https://github.com/RenanCostaNascimento" class="avatar"><img src="https://avatars2.githubusercontent.com/u/6060401?v=3&amp;s=60" width="48" height="48"></a> <a href="https://github.com/RenanCostaNascimento">RenanCostaNascimento</a> maintains <a href="https://github.com/RenanCostaNascimento/OfflineConcurrencyPatterns">Offline Concurrency Patterns</a></p>
+
+
+      </div>
+      <div class="creds">
+        <small>This page generated using <a href="https://pages.github.com/">GitHub Pages</a><br>theme by <a href="https://twitter.com/jonrohan/">Jon Rohan</a></small>
+      </div>
     </footer>
-    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
-    
-  </body>
+  </div>
+  <div class="current-section">
+    <a href="#top">Scroll to top</a>
+    <a href="https://github.com/RenanCostaNascimento/OfflineConcurrencyPatterns/tarball/master" class="tar">tar</a><a href="https://github.com/RenanCostaNascimento/OfflineConcurrencyPatterns/zipball/master" class="zip">zip</a><a href="" class="code">source code</a>
+    <p class="name"></p>
+  </div>
+
+  
+</body>
 </html>
