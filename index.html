@@ -1,0 +1,272 @@
+<!doctype html>
+<!-- The Time Machine GitHub pages theme was designed and developed by Jon Rohan, on Feb 7, 2012. -->
+<!-- Follow him for fun. http://twitter.com/jonrohan. Tail his code on https://github.com/jonrohan -->
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+  <link rel="stylesheet" href="stylesheets/stylesheet.css" media="screen">
+  <link rel="stylesheet" href="stylesheets/github-dark.css">
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+  <script type="text/javascript" src="javascripts/script.js"></script>
+
+  <title>Offline Concurrency Patterns</title>
+  <meta name="description" content="Projeto que exemplifica alguns padrões de projeto sobre Concorrência Offline.">
+
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+
+</head>
+
+<body>
+
+  <div class="wrapper">
+    <header>
+      <h1 class="title">Offline Concurrency Patterns</h1>
+    </header>
+    <div id="container">
+      <p class="tagline">Projeto que exemplifica alguns padrões de projeto sobre Concorrência Offline.</p>
+      <div id="main" role="main">
+        <div class="download-bar">
+        <div class="inner">
+          <a href="https://github.com/RenanCostaNascimento/OfflineConcurrencyPatterns/tarball/master" class="download-button tar"><span>Download</span></a>
+          <a href="https://github.com/RenanCostaNascimento/OfflineConcurrencyPatterns/zipball/master" class="download-button zip"><span>Download</span></a>
+          <a href="https://github.com/RenanCostaNascimento/OfflineConcurrencyPatterns" class="code">View Offline Concurrency Patterns on GitHub</a>
+        </div>
+        <span class="blc"></span><span class="trc"></span>
+        </div>
+        <article class="markdown-body">
+          <h1>
+<a id="introdução" class="anchor" href="#introdu%C3%A7%C3%A3o" aria-hidden="true"><span class="octicon octicon-link"></span></a>Introdução</h1>
+
+<p>Oi, eu sou o Renan. Hoje falarei sobre quatro padrões encontrados no livro Patterns of Enterprise Application, de Martin Fowler. Os padrões podem se encontrados no capítulo 16, Offline Concurrency Patterns, escritos por David Rice e Matt Foemmel. Os padrões descritos à seguir serão: Optimistic Offline Lock, Pessimistic Offline Lock, Coarse-Grained Lock e Implicit Lock. Sem mais delongas, vamos começar.  </p>
+
+<h1>
+<a id="optimistic-offline-lock" class="anchor" href="#optimistic-offline-lock" aria-hidden="true"><span class="octicon octicon-link"></span></a>Optimistic Offline Lock</h1>
+
+<p>Esse padrão tem esse nome pois ele assume que as chances de conflito entre transações serão baixas.  </p>
+
+<h3>
+<a id="qual-o-problema" class="anchor" href="#qual-o-problema" aria-hidden="true"><span class="octicon octicon-link"></span></a>Qual o problema?</h3>
+
+<p>Quando duas transações manipulam um mesmo dado, a integridade do mesmo pode ser comprometida. Isso ocorre pois não há garantia que o SGBD de fato manterá os dados consistentes ao término da transação. Para exemplicar essa situação, vamos analisar a Figura 1:  </p>
+
+<p>Figura 1 - Lost Update  </p>
+
+<p>Na Figura 1 vemos que, mesmo que cada transação isolada fosse mantida pelo SGBD, o updateDado12() realizado no passo 3 seria perdido quando o passo 4 fosse realizado. Isso tornaria o estado do banco inconsistente.  </p>
+
+<h3>
+<a id="como-funciona" class="anchor" href="#como-funciona" aria-hidden="true"><span class="octicon octicon-link"></span></a>Como funciona?</h3>
+
+<p>Para resolver esse problema, o Optimistic Offline Concurrency seguindo algumas abordagens:</p>
+
+<ul>
+<li>Uma opção seria adicionar uma nova coluna em cada tabela contendo a versão atual do registro do registro. A versão pode ser tão simples como um número que vai incrementado à medida que o registro vai sofrendo alterações. Um complemento interessante para o campo de versão seria adicionar também campos de data e responsável pela ultima modificação, facilitando o trabalho de identificação do autor da modificação e consequentemente a resolução do conflito.</li>
+<li>Uma outra abordagem seria verificar campo a campo todos os valores das colunas do registro e ver se algum valor sofreu modificação desde a ultima vez que o dado foi acessado.
+Independente da forma que o padrão seja implementado, a ideia é a mesma: as alterações realizadas no registro só poderão ser de fato efetuadas no banco (commit) se o registro não tiver sido modificado nesse meio tempo. A Figura 2 mostra como o padrão funciona.<br>
+</li>
+</ul>
+
+<p><img src="https://goo.gl/tJOEsF" alt="Optimistic Offline Lock">
+Figura 2 - Optimistic Offline Lock  </p>
+
+<p>Vemos então na Figura 2, mais precisamente na etapa 4.1, que o update realizado na etapa 4 não foi efetuado, pois na etapa 3 já havia sido feita uma operação de modificação no registro. Com isso o número da versão do mesmo foi alterado, e o usuário da Sessão 1 ficou impossibilitado de realizar a modificação.  </p>
+
+<h3>
+<a id="cadê-meu-código" class="anchor" href="#cad%C3%AA-meu-c%C3%B3digo" aria-hidden="true"><span class="octicon octicon-link"></span></a>Cadê meu código?</h3>
+
+<p>O código abaixo mostra um método encontrado em um DAO de Client que atualiza um registro somente se a versão não tiver sido alterada anteriormente.</p>
+
+<pre><code>public int optimisticUpdate(Client client) throws Exception {
+    open();
+    int registrosAfetados;
+    int versao = client.getVersao();
+    client.incrementarVersao();
+
+    stmt = con.prepareStatement("UPDATE cliente SET nome = ?, sexo = ?, email = ?, versao = ? WHERE id = ? AND versao = ?");
+    stmt.setString(1, client.getNome());
+    stmt.setString(2, client.getSexo());
+    stmt.setString(3, client.getEmail());
+    stmt.setInt(4, client.getVersao());
+    stmt.setInt(5, client.getId());
+    stmt.setInt(6, versao);
+
+    registrosAfetados = stmt.executeUpdate();
+    close();
+    return registrosAfetados;
+}
+</code></pre>
+
+<h1>
+<a id="pessimistic-offline-lock" class="anchor" href="#pessimistic-offline-lock" aria-hidden="true"><span class="octicon octicon-link"></span></a>Pessimistic Offline Lock</h1>
+
+<p>Esse padrão força a transação à adquirir o lock sobre um dado antes de começar a usá-lo, impedindo assim que trabalhos realizados sobre um registro sejam perdidos.  </p>
+
+<h3>
+<a id="qual-o-problema-1" class="anchor" href="#qual-o-problema-1" aria-hidden="true"><span class="octicon octicon-link"></span></a>Qual o problema?</h3>
+
+<p>Esse padrão é um complemento para o Optimistic Offline Lock. No Optimistic, há um conveniente muito grave. Todo o trabalho realizado na transação pode ser perdido caso alguma outra alteração tenha sido realizada no registro anteriormente. O Pessimistic tenta acabar com isso forçando a transação a obter o lock antes mesmo de manipular os dados.  </p>
+
+<h3>
+<a id="como-funciona-1" class="anchor" href="#como-funciona-1" aria-hidden="true"><span class="octicon octicon-link"></span></a>Como Funciona?</h3>
+
+<p>A principal forma de implementação desse padrão é através da construção de um Gerenciador de Locks do Sistema. Nele estão contidos todos os locks concedidos, assim como métodos para obtenção e liberação de locks. O Gerenciador precisa ser regido por um conjunto de regras que irão definir o que fazer quando o lock não puder ser concedido, quando liberar ou conceder locks, etc. É preciso também definir quais tipos de locks serão utilizados. Normalmente, há três tipos de lock:</p>
+
+<ul>
+<li>Lock Exclusivo de Leitura - Qualquer tentativa de acessar um dado para leitura deverá ter permissão através de um lock.</li>
+<li>Lock Exclusivo de Escrita - Impossibilita a edição simultânea de um mesmo registro por duas transações, ignorando locks de leitura. Contudo, sessões de leitura podem ser desatualizados.</li>
+<li>Lock de Leitura e Escrita - Locks de leitura e escrita são mutuamente exclusivos, mas locks de leitura podem ter acesso concorrente. Esse lock é o mais completo, permitindo maior grau de concorrência, no entanto, é mais complicado de ser implementado.<br>
+</li>
+</ul>
+
+<h3>
+<a id="cadê-meu-código-1" class="anchor" href="#cad%C3%AA-meu-c%C3%B3digo-1" aria-hidden="true"><span class="octicon octicon-link"></span></a>Cadê meu código?</h3>
+
+<p>O código abaixo mostra a implementação do DAO de Client utilzando a abordagem de Lock de Leitura e Escrita.</p>
+
+<pre><code>public Client pessimisticRead(int idCliente, String requester) throws Exception {
+    LockManager lockManager = LockManager.getInstance();
+    if (lockManager.acquireReadingLock(idCliente, requester)) {
+        Client cliente = get(idCliente);
+        return cliente;
+    }
+    return null;
+}
+
+
+
+public int pessimisticWrite(Client cliente, String requester) throws Exception {
+    LockManager lockManager = LockManager.getInstance();
+    if (lockManager.acquireWritingLock(cliente.getId(), requester)) {
+        int rowsAffected = update(cliente);
+        return rowsAffected;
+    }
+    return 0;
+}
+</code></pre>
+
+<p>Já o código abaixo mostra a implementação do Gerenciador de Lock.</p>
+
+<pre><code>public class LockManager {
+
+private static LockManager lockManager = null;
+
+/*O Integer corresponde ao identificador do recurso
+ A String corresponde ao identificador do requisitante*/
+private final Map&lt;Integer, String&gt; readingLockTable = new HashMap&lt;&gt;();
+private final Map&lt;Integer, String&gt; writingLockTable = new HashMap&lt;&gt;();
+private final Map&lt;String, Integer[]&gt; coarseGrainedLockTable = new HashMap&lt;&gt;();
+
+private LockManager() {
+}
+
+/**
+ * Busca a única instância do LockManager
+ *
+ * @return o LockManager
+ */
+public static LockManager getInstance() {
+    if (lockManager == null) {
+        lockManager = new LockManager();
+    }
+    return lockManager;
+}
+
+ public boolean acquireReadingLock(Integer idResource, String requester) {
+    if (writingLockTable.get(idResource) == null) {
+        readingLockTable.put(idResource, requester);
+        return true;
+    }
+    return false;
+}
+
+ public boolean acquireWritingLock(Integer idResource, String requester) {
+    if (writingLockTable.get(idResource) == null &amp;&amp; readingLockTable.get(idResource) == null) {
+        writingLockTable.put(idResource, requester);
+        return true;
+    }
+    return false;
+}
+</code></pre>
+
+<h1>
+<a id="coarse-grained-lock" class="anchor" href="#coarse-grained-lock" aria-hidden="true"><span class="octicon octicon-link"></span></a>Coarse-Grained Lock</h1>
+
+<p>O Coarse-Grained Lock trava um conjunto de objetos relacionados com apenas um lock.  </p>
+
+<h3>
+<a id="qual-o-problema-2" class="anchor" href="#qual-o-problema-2" aria-hidden="true"><span class="octicon octicon-link"></span></a>Qual o problema?</h3>
+
+<p>Criar um lock separado para cada objeto pode ser complicado: é preciso achar os objetos na ordem certa, podendo ocasionar impacto no desempenho, principalmente no Optimistic Offline Lock. Além disso, o grau de complexidade aumenta com a quantidade de relações entre os objetos. Por fim, o sistema pode não se comportar como se espera quando o controle de locks fica sob responsabilidade de algum framework.  </p>
+
+<h3>
+<a id="como-funciona-2" class="anchor" href="#como-funciona-2" aria-hidden="true"><span class="octicon octicon-link"></span></a>Como funciona?</h3>
+
+<p>Para resolver essa questão, é necessário criar um único ponto de acesso para o conjunto de objetos, de modo que apenas um lock seja necessário para acessá-los. Além disso, é preciso fornecer um método fácil para encontrar o único ponto de acesso para realizar o lock. Uma forma de implemtnação é através de um lock compartilhado, conforme Figura abaixo.</p>
+
+<p>IMAGEM SHARED LOCK</p>
+
+<p>Utilizando o lock compartilhado acima, é possível implementar facilmente o Pessimistic Lock, conforma Figura abaixo:</p>
+
+<p>IMAGEM Pessimistic Shared Lock</p>
+
+<h3>
+<a id="cadê-meu-código-2" class="anchor" href="#cad%C3%AA-meu-c%C3%B3digo-2" aria-hidden="true"><span class="octicon octicon-link"></span></a>Cadê meu código?</h3>
+
+<pre><code>public List&lt;Client&gt; coarseGrainedRead(Integer[] idResources, String requester) throws Exception {
+
+    LockManager lockManager = LockManager.getInstance();
+    List&lt;Client&gt; clients;
+
+    if (lockManager.acquireCoarseGrainedLock(idResources, requester)) {
+        clients = new ArrayList&lt;&gt;();
+
+        for (Integer id : idResources) {
+            clients.add(get(id));
+        }
+
+        return clients;
+    }
+
+    return null;
+}
+</code></pre>
+
+<h1>
+<a id="implicit-lock" class="anchor" href="#implicit-lock" aria-hidden="true"><span class="octicon octicon-link"></span></a>Implicit Lock</h1>
+
+<p>Retira o pesoa da utilização dos locks dos ombros do desenvolvedor.  </p>
+
+<h3>
+<a id="qual-o-problema-3" class="anchor" href="#qual-o-problema-3" aria-hidden="true"><span class="octicon octicon-link"></span></a>Qual o problema?</h3>
+
+<p>Texto explicativo...
+Desenvolvedores estão propensos a erros, podendo esquecer de escrever uma única linha de código que adquire o lock, ou ainda não usar o contador de versão corretamente. Isso pode inviabilizar completamente a transação do sistema.  </p>
+
+<h3>
+<a id="como-funciona-3" class="anchor" href="#como-funciona-3" aria-hidden="true"><span class="octicon octicon-link"></span></a>Como Funciona?</h3>
+
+<p>Tarefas de lock não devem ser tratadas explicitamente pelos desenvolvedores, mas implicitamente pela aplicação. É possível terceirizar essa responsabilidades para Frameworks, o padrão Layers Supertypes, ou ainda Ferramentas de geração de código. É aconselhado usar esse padrão em todas as aplicações, exceto nas mais simples, uma vez que o risco de um haver pelos menos um lock esquecido é muito grande.</p>
+        </article>
+      </div>
+    </div>
+    <footer>
+      <div class="owner">
+      <p><a href="https://github.com/RenanCostaNascimento" class="avatar"><img src="https://avatars2.githubusercontent.com/u/6060401?v=3&amp;s=60" width="48" height="48"></a> <a href="https://github.com/RenanCostaNascimento">RenanCostaNascimento</a> maintains <a href="https://github.com/RenanCostaNascimento/OfflineConcurrencyPatterns">Offline Concurrency Patterns</a></p>
+
+
+      </div>
+      <div class="creds">
+        <small>This page generated using <a href="https://pages.github.com/">GitHub Pages</a><br>theme by <a href="https://twitter.com/jonrohan/">Jon Rohan</a></small>
+      </div>
+    </footer>
+  </div>
+  <div class="current-section">
+    <a href="#top">Scroll to top</a>
+    <a href="https://github.com/RenanCostaNascimento/OfflineConcurrencyPatterns/tarball/master" class="tar">tar</a><a href="https://github.com/RenanCostaNascimento/OfflineConcurrencyPatterns/zipball/master" class="zip">zip</a><a href="" class="code">source code</a>
+    <p class="name"></p>
+  </div>
+
+  
+</body>
+</html>
