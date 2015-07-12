@@ -235,6 +235,8 @@ Figura 4 - Pessimistic Shared Lock</p>
 }
 </code></pre>
 
+<p>A única diferença entre o Coarse-Grained Lock e o Pessimistic Offline Lock nas implementações mostradas, é de que no Pessimistic um usuário só pode obter o lock de um único recurso, enquanto no Coarse-Grained o usuário pode lockar vários recursos.</p>
+
 <h1>
 <a id="implicit-lock" class="anchor" href="#implicit-lock" aria-hidden="true"><span class="octicon octicon-link"></span></a>Implicit Lock</h1>
 
@@ -243,8 +245,7 @@ Figura 4 - Pessimistic Shared Lock</p>
 <h3>
 <a id="qual-o-problema-3" class="anchor" href="#qual-o-problema-3" aria-hidden="true"><span class="octicon octicon-link"></span></a>Qual o problema?</h3>
 
-<p>Texto explicativo...
-Desenvolvedores estão propensos a erros, podendo esquecer de escrever uma única linha de código que adquire o lock, ou ainda não usar o contador de versão corretamente. Isso pode inviabilizar completamente a transação do sistema.  </p>
+<p>Desenvolvedores estão propensos a erros, podendo esquecer de escrever uma única linha de código que adquire o lock, ou ainda não usar o contador de versão corretamente. Isso pode inviabilizar completamente a transação do sistema.  </p>
 
 <h3>
 <a id="como-funciona-3" class="anchor" href="#como-funciona-3" aria-hidden="true"><span class="octicon octicon-link"></span></a>Como Funciona?</h3>
