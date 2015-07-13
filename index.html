@@ -51,7 +51,7 @@
 
 <p>Quando duas transações manipulam um mesmo dado, a integridade do mesmo pode ser comprometida. Isso ocorre pois não há garantia que o SGBD de fato manterá os dados consistentes ao término da transação. Para exemplicar essa situação, vamos analisar a Figura 1:  </p>
 
-<p><img src="http://postimg.org/image/od0x25obj/" alt="Lost Update">
+<p><img src="http://s3.postimg.org/8es7c0u3n/Lost_Update.png" alt="Lost Update">
 Figura 1 - Lost Update  </p>
 
 <p>Na Figura 1 vemos que, mesmo que cada transação isolada fosse mantida pelo SGBD, o updateDado12() realizado no passo 3 seria perdido quando o passo 4 fosse realizado. Isso tornaria o estado do banco inconsistente.  </p>
@@ -68,7 +68,7 @@ Independente da forma que o padrão seja implementado, a ideia é a mesma: as al
 </li>
 </ul>
 
-<p><img src="https://goo.gl/vnD77t" alt="Optimistic Offline Lock">
+<p><img src="http://s24.postimg.org/f8vbvrl79/Optimistic_Offline_Lock.png" alt="Optimistic Offline Lock">
 Figura 2 - Optimistic Offline Lock  </p>
 
 <p>Vemos então na Figura 2, mais precisamente na etapa 4.1, que o update realizado na etapa 4 não foi efetuado, pois na etapa 3 já havia sido feita uma operação de modificação no registro. Com isso o número da versão do mesmo foi alterado, e o usuário da Sessão 1 ficou impossibilitado de realizar a modificação.  </p>
@@ -203,14 +203,14 @@ public static LockManager getInstance() {
 <h3>
 <a id="como-funciona-2" class="anchor" href="#como-funciona-2" aria-hidden="true"><span class="octicon octicon-link"></span></a>Como funciona?</h3>
 
-<p>Para resolver essa questão, é necessário criar um único ponto de acesso para o conjunto de objetos, de modo que apenas um lock seja necessário para acessá-los. Além disso, é preciso fornecer um método fácil para encontrar o único ponto de acesso para realizar o lock. Uma forma de implemtnação é através de um lock compartilhado, conforme Figura abaixo.</p>
+<p>Para resolver essa questão, é necessário criar um único ponto de acesso para o conjunto de objetos, de modo que apenas um lock seja necessário para acessá-los. Além disso, é preciso fornecer um método fácil para encontrar o único ponto de acesso para realizar o lock. Uma forma de implementnação é através de um lock compartilhado, conforme Figura abaixo.</p>
 
-<p><img src="https://goo.gl/k6a15U" alt="Shared Lock">
+<p><img src="http://s9.postimg.org/mz06q6z9b/Share_version.png" alt="Shared Lock">
 Figura 3 - Shared Lock</p>
 
 <p>Utilizando o lock compartilhado acima, é possível implementar facilmente o Pessimistic Lock, conforma Figura abaixo:</p>
 
-<p><img src="https://goo.gl/Cb5v66" alt="Pessimistic Shared Lock">
+<p><img src="http://s15.postimg.org/d7opmmk57/Locking_a_Shared_Version.png" alt="Pessimistic Shared Lock">
 Figura 4 - Pessimistic Shared Lock</p>
 
 <h3>
