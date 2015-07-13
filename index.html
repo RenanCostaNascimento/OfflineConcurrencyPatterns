@@ -51,7 +51,7 @@
 
 <p>Quando duas transações manipulam um mesmo dado, a integridade do mesmo pode ser comprometida. Isso ocorre pois não há garantia que o SGBD de fato manterá os dados consistentes ao término da transação. Para exemplicar essa situação, vamos analisar a Figura 1:  </p>
 
-<p><img src="https://goo.gl/yOh6Lz" alt="Lost Update">
+<p><img src="http://postimg.org/image/od0x25obj/" alt="Lost Update">
 Figura 1 - Lost Update  </p>
 
 <p>Na Figura 1 vemos que, mesmo que cada transação isolada fosse mantida pelo SGBD, o updateDado12() realizado no passo 3 seria perdido quando o passo 4 fosse realizado. Isso tornaria o estado do banco inconsistente.  </p>
